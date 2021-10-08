@@ -2,6 +2,9 @@ package xyz.dm1lk.timer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Main extends JavaPlugin implements Listener {
     private static BukkitTask timerTask;
+    private static BossBar bossBar;
 
     @Override
     public void onEnable() {
@@ -26,6 +30,8 @@ public final class Main extends JavaPlugin implements Listener {
     @Override
     public void onDisable() {
         if(timerTask != null && !timerTask.isCancelled()){
+            bossBar.setVisible(false);
+            bossBar.removeAll();
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.setExp(0);
             }
@@ -47,6 +53,8 @@ public final class Main extends JavaPlugin implements Listener {
             if (Objects.equals(args[0], "cancel")) {
                 if (timerTask != null && !timerTask.isCancelled()) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
+                        bossBar.setVisible(false);
+                        bossBar.removeAll();
                         player.setLevel(0);
                         player.setExp(0);
                     }
@@ -57,10 +65,18 @@ public final class Main extends JavaPlugin implements Listener {
                 }
                 return true;
             }
+            try {
+                seconds.set(Integer.parseInt(args[0]));
+            } catch (Exception exception) {
+                sender.sendMessage(ChatColor.RED + "Hey! Please only include numbers in your arguments for this command :p");
+                return false;
+            }
             if (timerTask != null) {
                 if (!timerTask.isCancelled()) {
                     Bukkit.getLogger().info(String.valueOf(1));
                     if (args.length > 1 && Objects.equals(args[1], "force")) {
+                        bossBar.setVisible(false);
+                        bossBar.removeAll();
                         timerTask.cancel();
                     } else {
                         sender.sendMessage(ChatColor.RED + "Hey! Someone already has a timer running, to override this, add \"force\" as a second argument to the command.");
@@ -68,23 +84,25 @@ public final class Main extends JavaPlugin implements Listener {
                     }
                 }
             }
-            try {
-                seconds.set(Integer.parseInt(args[0]));
-            } catch (Exception exception) {
-                sender.sendMessage(ChatColor.RED + "Hey! Please only include numbers in your arguments for this command :p");
-                return false;
-            }
+            int initialSeconds = seconds.get();
+            bossBar = Bukkit.createBossBar(ChatColor.BLUE + String.valueOf(seconds) + " seconds left...", BarColor.GREEN, BarStyle.SOLID);
             timerTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
                 if (seconds.get() == 0) {
+                    bossBar.setVisible(false);
+                    bossBar.removeAll();
                     timerTask.cancel();
                     return;
                 }
                 for (Player player : Bukkit.getOnlinePlayers()) {
+                    bossBar.addPlayer(player);
                     player.setLevel(seconds.get());
                 }
+                bossBar.setProgress((double) seconds.get() / initialSeconds);
+                bossBar.setTitle(String.valueOf(seconds) + " seconds left...");
                 seconds.set(seconds.get() - 1);
             }, 1L, 20L);
             sender.sendMessage(ChatColor.GREEN + "Running a timer for " + args[0] + " seconds!");
+            bossBar.setVisible(true);
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.setLevel(0);
                 player.setExp(0);
