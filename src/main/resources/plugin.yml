@@ -1,0 +1,11 @@
+name: BukkitTimer
+version: '${project.version}'
+main: xyz.dm1lk.timer.Main
+api-version: 1.17
+prefix: timer
+load: STARTUP
+authors: [ dm1lk ]
+description: Quick and dirty timer plugin I threw together in like an hour.
+commands:
+  timer:
+    usage: /<command> <seconds>
