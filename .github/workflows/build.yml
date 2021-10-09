@@ -23,5 +23,5 @@ jobs:
       - name: Save JAR as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: HMP-${{ env.RELEASE_VERSION }}
+          name: BukkitTimer-${{ env.RELEASE_VERSION }}
           path: staging/BukkitTimer-${{ env.RELEASE_VERSION }}.jar
