@@ -18,18 +18,23 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Main extends JavaPlugin implements Listener {
+    private static final String baseCommand = "timer";
     private static BukkitTask timerTask;
     private static BossBar bossBar;
 
     @Override
     public void onEnable() {
-        this.getCommand("timer").setExecutor(this);
+        if (!Bukkit.getWorlds().isEmpty()) {
+            getLogger().warning("Don't worry, we all make mistakes sometimes! (RELOAD DETECTED)");
+            getLogger().warning("Seriously though, cut that out and reboot it instead, it's bad for your server :[");
+        }
         this.getServer().getPluginManager().registerEvents(this, this);
+        this.getCommand(baseCommand).setExecutor(this);
     }
 
     @Override
     public void onDisable() {
-        if(timerTask != null && !timerTask.isCancelled()){
+        if (timerTask != null && !timerTask.isCancelled()) {
             bossBar.setVisible(false);
             bossBar.removeAll();
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -39,8 +44,8 @@ public final class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent event){
-        if(timerTask != null && !timerTask.isCancelled()){
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        if (timerTask != null && !timerTask.isCancelled()) {
             event.getPlayer().setLevel(0);
             event.getPlayer().setExp(0);
         }
@@ -67,7 +72,7 @@ public final class Main extends JavaPlugin implements Listener {
             }
             try {
                 seconds.set(Integer.parseInt(args[0]));
-                if(seconds.get() < 1){
+                if (seconds.get() < 1) {
                     sender.sendMessage(ChatColor.RED + "Hey! You must provide a number above zero to start a timer!");
                     return true;
                 }
@@ -102,7 +107,7 @@ public final class Main extends JavaPlugin implements Listener {
                     player.setLevel(seconds.get());
                 }
                 bossBar.setProgress((double) seconds.get() / initialSeconds);
-                bossBar.setTitle(String.valueOf(seconds) + " seconds left...");
+                bossBar.setTitle(seconds + " seconds left...");
                 seconds.set(seconds.get() - 1);
             }, 1L, 20L);
             sender.sendMessage(ChatColor.GREEN + "Running a timer for " + args[0] + " seconds!");
