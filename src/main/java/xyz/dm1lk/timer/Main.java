@@ -67,6 +67,10 @@ public final class Main extends JavaPlugin implements Listener {
             }
             try {
                 seconds.set(Integer.parseInt(args[0]));
+                if(seconds.get() < 1){
+                    sender.sendMessage(ChatColor.RED + "Hey! You must provide a number above zero to start a timer!");
+                    return true;
+                }
             } catch (Exception exception) {
                 sender.sendMessage(ChatColor.RED + "Hey! Please only include numbers in your arguments for this command :p");
                 return false;
